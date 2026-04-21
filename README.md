@@ -58,6 +58,8 @@
 ---
 
 ## 🛠️ Tech Stack
+
+```bash
 ├── Framework     → Next.js 14 (App Router)
 ├── Language      → TypeScript
 ├── Styling       → Tailwind CSS
@@ -69,6 +71,8 @@
 ---
 
 ## 📁 Project Structure
+
+```bash
 finflow-dashboard/
 ├── src/
 │   ├── app/
@@ -93,8 +97,7 @@ finflow-dashboard/
 │   │   └── utils.ts              # cn() helper
 │   └── types/
 │       └── index.ts              # TypeScript types
-
----
+```
 
 ## 🚀 Getting Started
 
