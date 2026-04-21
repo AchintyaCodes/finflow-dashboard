@@ -75,7 +75,12 @@ export default function ReportsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={v => `$${v/1000}k`} />
-                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Tooltip
+  formatter={(v: any) => [
+    `$${Number(v || 0).toLocaleString()}`,
+    "Revenue",
+  ]}
+/>
                 <Line type="monotone" dataKey="profit" stroke="#6366f1" strokeWidth={2} dot={{ fill: "#6366f1", r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
