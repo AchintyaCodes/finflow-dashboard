@@ -13,11 +13,11 @@ if (!fs.existsSync(DB_DIR)) {
 const globalForDb = globalThis as unknown as { _db?: Database.Database };
 
 if (!globalForDb._db) {
-  const db = new Database(DB_PATH);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  db.pragma("busy_timeout = 5000");
-  globalForDb._db = db;
+  const instance = new Database(DB_PATH);
+  instance.pragma("journal_mode = WAL");
+  instance.pragma("foreign_keys = ON");
+  instance.pragma("busy_timeout = 5000");
+  globalForDb._db = instance;
 }
 
 const db = globalForDb._db!;
@@ -72,5 +72,28 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
+
+// One-time migration: fix any invoices with hardcoded 2025 dates
+// by spreading them across the last 6 months relative to today
+const staleCount = (db.prepare(
+  "SELECT COUNT(*) as c FROM invoices WHERE issued_at LIKE '2025-%' AND issued_at < date('now', '-30 days')"
+).get() as { c: number }).c;
+
+if (staleCount > 0) {
+  const offsets = [-2, -12, -17, -21, -28, -33, -43, -75, -105, -135, -165, -195];
+  const staleInvoices = db.prepare(
+    "SELECT id FROM invoices WHERE issued_at LIKE '2025-%' AND issued_at < date('now', '-30 days') ORDER BY issued_at ASC"
+  ).all() as { id: number }[];
+
+  const update = db.prepare("UPDATE invoices SET issued_at = date('now', ? || ' days'), due_at = date('now', ? || ' days') WHERE id = ?");
+  const migrate = db.transaction(() => {
+    staleInvoices.forEach((inv, i) => {
+      const offset = offsets[i % offsets.length];
+      const dueOffset = offset + 10;
+      update.run(String(offset), String(dueOffset), inv.id);
+    });
+  });
+  migrate();
+}
 
 export default db;

@@ -16,16 +16,23 @@ export default async function ReportsPage() {
     "SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ? AND status != 'Paid'"
   ).get(user.id) as { v: number }).v;
 
-  // Monthly revenue (last 6 months)
-  const monthlyData = db.prepare(`
-    SELECT strftime('%b', issued_at) as month,
-           SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END) as revenue,
-           0 as expenses
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  // Monthly revenue (last 18 months) — derive month label in JS, not SQLite %b
+  const monthlyRaw = db.prepare(`
+    SELECT strftime('%Y-%m', issued_at) as ym,
+           SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END) as revenue
     FROM invoices
-    WHERE user_id = ? AND issued_at >= date('now', '-6 months')
+    WHERE user_id = ? AND issued_at >= date('now', '-18 months')
     GROUP BY strftime('%Y-%m', issued_at)
-    ORDER BY issued_at ASC
-  `).all(user.id) as { month: string; revenue: number; expenses: number }[];
+    ORDER BY ym ASC
+  `).all(user.id) as { ym: string; revenue: number }[];
+
+  const monthlyData = monthlyRaw.map(r => ({
+    month: MONTHS[parseInt(r.ym.split("-")[1]) - 1],
+    revenue: r.revenue,
+    expenses: 0,
+  }));
 
   // Revenue by client
   const clientRevenue = db.prepare(`

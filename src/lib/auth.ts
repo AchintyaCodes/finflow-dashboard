@@ -64,6 +64,13 @@ export async function signOut() {
 }
 
 async function seedDemoData(userId: number) {
+  // Helper: date relative to today
+  function relDate(offsetDays: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  }
+
   // Insert demo clients
   const clients = [
     { name: "Nexora Studio", email: "hello@nexora.io", status: "Active", rating: 5, since: "Jan 2024" },
@@ -104,15 +111,17 @@ async function seedDemoData(userId: number) {
     projectIds.push(r.lastInsertRowid as number);
   }
 
-  // Insert demo invoices
+  // Insert demo invoices — 6 months spread: Nov→current, matching original chart shape
   const invoices = [
-    { clientIdx: 0, projectIdx: 0, num: "INV-041", amount: 3200, status: "Pending", issued: "2025-04-20", due: "2025-04-30" },
-    { clientIdx: 1, projectIdx: 1, num: "INV-040", amount: 5500, status: "Paid", issued: "2025-04-10", due: "2025-04-22" },
-    { clientIdx: 2, projectIdx: 2, num: "INV-039", amount: 900, status: "Overdue", issued: "2025-04-05", due: "2025-04-18" },
-    { clientIdx: 3, projectIdx: 4, num: "INV-038", amount: 2100, status: "Paid", issued: "2025-04-01", due: "2025-04-15" },
-    { clientIdx: 4, projectIdx: 5, num: "INV-037", amount: 4800, status: "Paid", issued: "2025-03-25", due: "2025-04-10" },
-    { clientIdx: 5, projectIdx: 3, num: "INV-036", amount: 2000, status: "Pending", issued: "2025-03-20", due: "2025-04-05" },
-    { clientIdx: 0, projectIdx: 0, num: "INV-035", amount: 800, status: "Paid", issued: "2025-03-10", due: "2025-03-25" },
+    { clientIdx: 0, projectIdx: 0, num: "INV-041", amount: 9200,  status: "Paid",    issued: relDate(-150), due: relDate(-136) },
+    { clientIdx: 1, projectIdx: 1, num: "INV-040", amount: 11400, status: "Paid",    issued: relDate(-120), due: relDate(-106) },
+    { clientIdx: 2, projectIdx: 2, num: "INV-039", amount: 8700,  status: "Paid",    issued: relDate(-90),  due: relDate(-76)  },
+    { clientIdx: 3, projectIdx: 4, num: "INV-038", amount: 13500, status: "Paid",    issued: relDate(-60),  due: relDate(-46)  },
+    { clientIdx: 4, projectIdx: 5, num: "INV-037", amount: 15800, status: "Paid",    issued: relDate(-30),  due: relDate(-16)  },
+    { clientIdx: 0, projectIdx: 0, num: "INV-036", amount: 14040, status: "Paid",    issued: relDate(-12),  due: relDate(2)    },
+    { clientIdx: 1, projectIdx: 1, num: "INV-035", amount: 3200,  status: "Pending", issued: relDate(-5),   due: relDate(9)    },
+    { clientIdx: 2, projectIdx: 2, num: "INV-034", amount: 900,   status: "Overdue", issued: relDate(-3),   due: relDate(4)    },
+    { clientIdx: 3, projectIdx: 4, num: "INV-033", amount: 100,   status: "Paid",    issued: relDate(-1),   due: relDate(13)   },
   ];
 
   const insertInvoice = db.prepare(

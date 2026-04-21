@@ -36,14 +36,21 @@ export default async function Home() {
     { label: "Unpaid Invoices",    value: `$${unpaidTotal.toLocaleString()}`,   trend: "outstanding", up: false },
   ];
 
-  // Revenue by month (last 6 months)
-  const revenueData = db.prepare(`
-    SELECT strftime('%b', issued_at) as month, SUM(amount) as revenue
+  // Revenue by month (last 18 months) — use ym for sorting, derive label in JS
+  const revenueRaw = db.prepare(`
+    SELECT strftime('%Y-%m', issued_at) as ym,
+           SUM(amount) as revenue
     FROM invoices
-    WHERE user_id = ? AND issued_at >= date('now', '-6 months')
+    WHERE user_id = ? AND issued_at >= date('now', '-18 months')
     GROUP BY strftime('%Y-%m', issued_at)
-    ORDER BY issued_at ASC
-  `).all(user.id) as { month: string; revenue: number }[];
+    ORDER BY ym ASC
+  `).all(user.id) as { ym: string; revenue: number }[];
+
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const revenueData = revenueRaw.map(r => ({
+    month: MONTHS[parseInt(r.ym.split("-")[1]) - 1],
+    revenue: r.revenue,
+  }));
 
   // Recent invoices
   const invoices = db.prepare(`
