@@ -49,15 +49,13 @@
 <div align="center">
 
 ### Dashboard
-![Dashboard](https://github.com/user-attachments/assets/3d5c6565-a16a-4d8d-a798-4ea41100dcbf)
+<img src="https://github.com/user-attachments/assets/3d5c6565-a16a-4d8d-a798-4ea41100dcbf" width="100%" />
 
 ### Reports
-![Reports](<img width="2879" height="1556" alt="image" src="https://github.com/user-attachments/assets/1ab2218c-a8f5-4b99-8ea6-a8551062662d" />
-)
+<img src="https://github.com/user-attachments/assets/1ab2218c-a8f5-4b99-8ea6-a8551062662d" width="100%" />
 
 ### Clients
-![Clients](<img width="2879" height="1557" alt="image" src="https://github.com/user-attachments/assets/350ab359-8bb5-4687-8150-91f355ab41e1" />
-)
+<img src="https://github.com/user-attachments/assets/350ab359-8bb5-4687-8150-91f355ab41e1" width="100%" />
 
 </div>
 
