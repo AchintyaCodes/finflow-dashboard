@@ -67,7 +67,7 @@
 ├── Icons         → Lucide React
 ├── Utilities     → clsx
 └── Deployment    → Vercel
-
+```
 ---
 
 ## 📁 Project Structure
