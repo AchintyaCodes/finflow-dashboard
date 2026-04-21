@@ -60,7 +60,12 @@ export default function ReportsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={v => `$${v/1000}k`} />
-                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Tooltip
+  formatter={(value: any) => [
+    `$${Number(value ?? 0).toLocaleString()}`,
+    "Revenue"
+  ]}
+/>
                 <Bar dataKey="revenue"  fill="#6366f1" radius={[4,4,0,0]} />
                 <Bar dataKey="expenses" fill="#e0e7ff" radius={[4,4,0,0]} />
               </BarChart>
@@ -94,7 +99,12 @@ export default function ReportsPage() {
                 <Pie data={clientRevenue} cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3}>
                   {clientRevenue.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Tooltip
+  formatter={(value: any) => [
+    `$${Number(value ?? 0).toLocaleString()}`,
+    "Revenue"
+  ]}
+/>
               </PieChart>
               <div className="grid grid-cols-2 gap-2 flex-1">
                 {clientRevenue.map((c, i) => (
