@@ -49,8 +49,7 @@
 <div align="center">
 
 ### Dashboard
-![Dashboard](<img width="2848" height="1554" alt="image" src="https://github.com/user-attachments/assets/3d5c6565-a16a-4d8d-a798-4ea41100dcbf" />
-)
+![Dashboard](https://github.com/user-attachments/assets/3d5c6565-a16a-4d8d-a798-4ea41100dcbf)
 
 ### Reports
 ![Reports](<img width="2879" height="1556" alt="image" src="https://github.com/user-attachments/assets/1ab2218c-a8f5-4b99-8ea6-a8551062662d" />
