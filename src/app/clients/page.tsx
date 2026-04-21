@@ -1,18 +1,11 @@
-"use client";
+import AppShell from "@/components/layout/AppShell";
+import { requireUser } from "@/lib/auth";
+import db from "@/lib/db";
+import { Users, TrendingUp, Star } from "lucide-react";
+import AddClientModal from "@/components/clients/AddClientModal";
+import DeleteClientButton from "@/components/clients/DeleteClientButton";
 
-import Sidebar from "@/components/layout/Sidebar";
-import TopBar from "@/components/layout/TopBar";
-import { useState } from "react";
-import { Users, TrendingUp, Star, Clock } from "lucide-react";
-
-const clients = [
-  { name: "Nexora Studio",  email: "hello@nexora.io",     revenue: "$12,400", projects: 3, status: "Active",   rating: 5, since: "Jan 2024" },
-  { name: "Meridian Labs",  email: "work@meridian.co",    revenue: "$9,800",  projects: 2, status: "Active",   rating: 4, since: "Mar 2024" },
-  { name: "Oakfield Co.",   email: "oak@oakfield.com",    revenue: "$4,200",  projects: 1, status: "Inactive", rating: 3, since: "Aug 2023" },
-  { name: "Vertex Media",   email: "hi@vertexmedia.io",   revenue: "$7,600",  projects: 4, status: "Active",   rating: 5, since: "Nov 2023" },
-  { name: "Bluewave Inc.",  email: "team@bluewave.com",   revenue: "$15,200", projects: 5, status: "Active",   rating: 5, since: "Jun 2023" },
-  { name: "Driftline Co.",  email: "contact@driftline.co",revenue: "$3,100",  projects: 1, status: "Pending",  rating: 4, since: "Feb 2024" },
-];
+export const dynamic = "force-dynamic";
 
 const statusStyle: Record<string, string> = {
   Active:   "bg-emerald-50 text-emerald-600",
@@ -20,62 +13,74 @@ const statusStyle: Record<string, string> = {
   Pending:  "bg-amber-50 text-amber-600",
 };
 
-export default function ClientsPage() {
-  const [search, setSearch] = useState("");
-  const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+export default async function ClientsPage() {
+  const user = await requireUser();
+
+  const clients = db.prepare(`
+    SELECT c.id, c.name, c.email, c.status, c.rating, c.since,
+           COUNT(DISTINCT p.id) as projects,
+           COALESCE(SUM(i.amount), 0) as revenue
+    FROM clients c
+    LEFT JOIN projects p ON p.client_id = c.id
+    LEFT JOIN invoices i ON i.client_id = c.id AND i.status = 'Paid'
+    WHERE c.user_id = ?
+    GROUP BY c.id
+    ORDER BY revenue DESC
+  `).all(user.id) as {
+    id: number; name: string; email: string; status: string;
+    rating: number; since: string; projects: number; revenue: number;
+  }[];
+
+  const totalRevenue = clients.reduce((s, c) => s + c.revenue, 0);
+  const avgRating = clients.length
+    ? (clients.reduce((s, c) => s + c.rating, 0) / clients.length).toFixed(1)
+    : "0.0";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-      <TopBar />
-      <main className="ml-60 pt-16 p-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { icon: Users,      label: "Total Clients",   value: "6",      sub: "+2 this quarter" },
-            { icon: TrendingUp, label: "Total Revenue",   value: "$52,300", sub: "across all clients" },
-            { icon: Star,       label: "Avg Rating",      value: "4.3 / 5", sub: "based on 6 clients" },
-          ].map(({ icon: Icon, label, value, sub }) => (
-            <div key={label} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                <Icon size={18} className="text-indigo-500" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">{label}</p>
-                <p className="text-xl font-bold text-gray-800">{value}</p>
-                <p className="text-xs text-gray-400">{sub}</p>
-              </div>
+    <AppShell>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { icon: Users,      label: "Total Clients",  value: String(clients.length),          sub: "in your account" },
+          { icon: TrendingUp, label: "Total Revenue",  value: `$${totalRevenue.toLocaleString()}`, sub: "from paid invoices" },
+          { icon: Star,       label: "Avg Rating",     value: `${avgRating} / 5`,              sub: "across all clients" },
+        ].map(({ icon: Icon, label, value, sub }) => (
+          <div key={label} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <Icon size={18} className="text-indigo-500" />
             </div>
-          ))}
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-800">All Clients</h2>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search clients..."
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300 w-48"
-            />
+            <div>
+              <p className="text-xs text-gray-400">{label}</p>
+              <p className="text-xl font-bold text-gray-800">{value}</p>
+              <p className="text-xs text-gray-400">{sub}</p>
+            </div>
           </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-800">All Clients</h2>
+          <AddClientModal />
+        </div>
+        {clients.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-8">No clients yet. Add your first one!</p>
+        ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
-                {["Client","Email","Revenue","Projects","Since","Rating","Status"].map(h => (
+                {["Client","Email","Revenue","Projects","Since","Rating","Status",""].map(h => (
                   <th key={h} className="text-left pb-2 font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map((c) => (
-                <tr key={c.name} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              {clients.map((c) => (
+                <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   <td className="py-3 font-semibold text-gray-800">{c.name}</td>
                   <td className="py-3 text-gray-400">{c.email}</td>
-                  <td className="py-3 font-medium text-indigo-600">{c.revenue}</td>
+                  <td className="py-3 font-medium text-indigo-600">${c.revenue.toLocaleString()}</td>
                   <td className="py-3 text-gray-600">{c.projects}</td>
                   <td className="py-3 text-gray-400">{c.since}</td>
                   <td className="py-3 text-amber-400">{"★".repeat(c.rating)}{"☆".repeat(5 - c.rating)}</td>
@@ -84,12 +89,15 @@ export default function ClientsPage() {
                       {c.status}
                     </span>
                   </td>
+                  <td className="py-3">
+                    <DeleteClientButton id={c.id} />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </main>
-    </div>
+        )}
+      </div>
+    </AppShell>
   );
 }

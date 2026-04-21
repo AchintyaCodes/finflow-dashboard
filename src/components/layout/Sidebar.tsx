@@ -16,11 +16,15 @@ const navItems = [
   { label: "Settings",  href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+type Props = { userName?: string };
+
+export default function Sidebar({ userName = "You" }: Props) {
   const pathname = usePathname();
+  const initial = userName.charAt(0).toUpperCase();
+
   return (
     <aside className="h-screen w-60 bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 z-20">
-      <div className="px-6 py-5 border-b border-slate-800">
+      <div className="px-6 py-5 border-b border-gray-100">
         <span className="text-gray-900 font-bold text-xl tracking-tight">
           Fin<span className="text-indigo-400">Flow</span>
         </span>
@@ -35,8 +39,8 @@ export default function Sidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                 active
-  ? "bg-gray-100 text-gray-900 font-medium"
-  : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                  ? "bg-indigo-50 text-indigo-700 font-medium"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               <Icon size={16} />
@@ -47,9 +51,11 @@ export default function Sidebar() {
       </nav>
       <div className="px-4 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-gray-900 text-xs font-bold">A</div>
+          <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+            {initial}
+          </div>
           <div>
-            <p className="text-gray-900 text-xs font-medium">Achintya</p>
+            <p className="text-gray-800 text-xs font-medium">{userName}</p>
             <p className="text-gray-400 text-xs">Pro Plan</p>
           </div>
         </div>

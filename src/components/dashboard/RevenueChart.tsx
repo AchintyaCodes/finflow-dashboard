@@ -9,14 +9,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { revenueData } from "@/lib/data";
+type Props = { data?: { month: string; revenue: number }[] };
 
-export default function RevenueChart() {
+export default function RevenueChart({ data = [] }: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-700 mb-4">Revenue Overview</h2>
       <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={revenueData}>
+        <AreaChart data={data}>
           <defs>
             <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />

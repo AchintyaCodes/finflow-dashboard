@@ -1,4 +1,4 @@
-import { projects } from "@/lib/data";
+type Project = { name: string; client: string; stage: "Proposal" | "In Progress" | "Review" | "Paid"; value: string };
 
 const stages = ["Proposal", "In Progress", "Review", "Paid"] as const;
 
@@ -9,7 +9,7 @@ const stageConfig: Record<string, { color: string; dot: string; bg: string }> = 
   Paid:          { color: "text-emerald-600", dot: "bg-emerald-400", bg: "bg-emerald-50" },
 };
 
-export default function ProjectPipeline() {
+export default function ProjectPipeline({ projects = [] }: { projects?: Project[] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between mb-5">

@@ -1,4 +1,6 @@
-import { invoices } from "@/lib/data";
+import Link from "next/link";
+
+type Invoice = { id: string; client: string; project: string; due: string; amount: string; status: "Paid" | "Pending" | "Overdue" };
 
 const statusStyles: Record<string, string> = {
   Paid: "bg-emerald-50 text-emerald-600",
@@ -6,12 +8,12 @@ const statusStyles: Record<string, string> = {
   Overdue: "bg-red-50 text-red-500",
 };
 
-export default function ClientTable() {
+export default function ClientTable({ invoices = [] }: { invoices?: Invoice[] }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-gray-700">Recent Invoices</h2>
-        <button className="text-xs text-indigo-500 hover:underline">See all</button>
+        <Link href="/invoices" className="text-xs text-indigo-500 hover:underline">See all</Link>
       </div>
       <table className="w-full text-sm">
         <thead>
