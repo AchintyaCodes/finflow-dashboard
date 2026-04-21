@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=200&section=header&text=FinFlow%20Dashboard&fontSize=48&fontColor=ffffff&fontAlignY=35&desc=Freelancer%20Revenue%20and%20Analytics%20Platform&descAlignY=55&descSize=18" width="100%"/>
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=200&section=header&text=FinFlow%20Dashboard&fontSize=48&fontColor=ffffff&fontAlignY=45" width="100%"/>
+</p>
 
 <br/>
 
