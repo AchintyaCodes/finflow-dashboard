@@ -49,13 +49,16 @@
 <div align="center">
 
 ### Dashboard
-![Dashboard](https://placehold.co/900x500/f8fafc/6366f1?text=Dashboard+Overview)
+![Dashboard](<img width="2848" height="1554" alt="image" src="https://github.com/user-attachments/assets/3d5c6565-a16a-4d8d-a798-4ea41100dcbf" />
+)
 
 ### Reports
-![Reports](https://placehold.co/900x500/f8fafc/6366f1?text=Reports+Page)
+![Reports](<img width="2879" height="1556" alt="image" src="https://github.com/user-attachments/assets/1ab2218c-a8f5-4b99-8ea6-a8551062662d" />
+)
 
 ### Clients
-![Clients](https://placehold.co/900x500/f8fafc/6366f1?text=Clients+Page)
+![Clients](<img width="2879" height="1557" alt="image" src="https://github.com/user-attachments/assets/350ab359-8bb5-4687-8150-91f355ab41e1" />
+)
 
 </div>
 
