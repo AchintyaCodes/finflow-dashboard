@@ -10,13 +10,19 @@
 ![Recharts](https://img.shields.io/badge/Recharts-6366f1?style=for-the-badge&logo=chartdotjs&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed_on_Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
+## 🚀 Live Demo
+
+🔗 https://finflow-dashboard-virid.vercel.app
+
+[![Deploy with Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://finflow-dashboard-virid.vercel.app)
+
 <br/>
 
 > **A full-featured freelancer analytics dashboard** — track revenue, manage clients, monitor projects, and visualize business performance. Built from scratch with Next.js 14, Tailwind CSS, and Recharts.
 
 <br/>
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-6366f1?style=for-the-badge)](https://finflow-dashboard.vercel.app)
+
 [![GitHub Repo](https://img.shields.io/badge/📁_View_Repo-gray?style=for-the-badge)](https://github.com/AchintyaCodes/finflow-dashboard)
 
 </div>
