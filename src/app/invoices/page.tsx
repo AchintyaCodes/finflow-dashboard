@@ -1,6 +1,6 @@
 import AppShell from "@/components/layout/AppShell";
 import { requireUser } from "@/lib/auth";
-import db from "@/lib/db";
+import sql from "@/lib/db";
 import AddInvoiceModal from "@/components/invoices/AddInvoiceModal";
 import InvoiceActions from "@/components/invoices/InvoiceActions";
 
@@ -15,25 +15,24 @@ const statusStyle: Record<string, string> = {
 export default async function InvoicesPage() {
   const user = await requireUser();
 
-  const invoices = db.prepare(`
-    SELECT i.id, i.invoice_number, c.name as client, p.name as project,
-           i.issued_at, i.due_at, i.amount, i.status
-    FROM invoices i
-    LEFT JOIN clients c ON i.client_id = c.id
-    LEFT JOIN projects p ON i.project_id = p.id
-    WHERE i.user_id = ?
-    ORDER BY i.created_at DESC
-  `).all(user.id) as {
-    id: number; invoice_number: string; client: string; project: string;
-    issued_at: string; due_at: string; amount: number; status: string;
-  }[];
+  const [invoiceRows, clientRows, projectRows] = await Promise.all([
+    sql`SELECT i.id, i.invoice_number, c.name as client, p.name as project,
+               i.issued_at, i.due_at, i.amount, i.status
+        FROM invoices i
+        LEFT JOIN clients c ON i.client_id = c.id
+        LEFT JOIN projects p ON i.project_id = p.id
+        WHERE i.user_id = ${user.id} ORDER BY i.created_at DESC`,
+    sql`SELECT id, name FROM clients WHERE user_id = ${user.id}`,
+    sql`SELECT id, name FROM projects WHERE user_id = ${user.id}`,
+  ]);
 
-  const clients = db.prepare("SELECT id, name FROM clients WHERE user_id = ?").all(user.id) as { id: number; name: string }[];
-  const projects = db.prepare("SELECT id, name FROM projects WHERE user_id = ?").all(user.id) as { id: number; name: string }[];
+  const invoices = invoiceRows as any[];
+  const clients  = clientRows as any[];
+  const projects = projectRows as any[];
 
-  const total   = invoices.reduce((s, i) => s + i.amount, 0);
-  const paid    = invoices.filter(i => i.status === "Paid").reduce((s, i) => s + i.amount, 0);
-  const pending = invoices.filter(i => i.status !== "Paid").reduce((s, i) => s + i.amount, 0);
+  const total   = invoices.reduce((s, i) => s + Number(i.amount), 0);
+  const paid    = invoices.filter(i => i.status === "Paid").reduce((s, i) => s + Number(i.amount), 0);
+  const pending = invoices.filter(i => i.status !== "Paid").reduce((s, i) => s + Number(i.amount), 0);
 
   return (
     <AppShell>
@@ -67,26 +66,18 @@ export default async function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((inv) => (
+              {invoices.map((inv: any) => (
                 <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   <td className="py-2.5 text-indigo-500 font-medium">{inv.invoice_number}</td>
                   <td className="py-2.5 text-gray-700">{inv.client ?? "—"}</td>
                   <td className="py-2.5 text-gray-400">{inv.project ?? "—"}</td>
-                  <td className="py-2.5 text-gray-400">
-                    {new Date(inv.issued_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </td>
-                  <td className="py-2.5 text-gray-500">
-                    {new Date(inv.due_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </td>
-                  <td className="py-2.5 font-semibold text-gray-800">${inv.amount.toLocaleString()}</td>
+                  <td className="py-2.5 text-gray-400">{new Date(inv.issued_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
+                  <td className="py-2.5 text-gray-500">{new Date(inv.due_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
+                  <td className="py-2.5 font-semibold text-gray-800">${Number(inv.amount).toLocaleString()}</td>
                   <td className="py-2.5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle[inv.status]}`}>
-                      {inv.status}
-                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle[inv.status]}`}>{inv.status}</span>
                   </td>
-                  <td className="py-2.5">
-                    <InvoiceActions id={inv.id} currentStatus={inv.status} />
-                  </td>
+                  <td className="py-2.5"><InvoiceActions id={inv.id} currentStatus={inv.status} /></td>
                 </tr>
               ))}
             </tbody>
