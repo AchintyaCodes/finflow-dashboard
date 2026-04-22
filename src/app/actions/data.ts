@@ -81,7 +81,7 @@ export async function addInvoice(formData: FormData) {
   const parsed = InvoiceSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const db = sql();
-  const countRows = await db`SELECT COUNT(*) as c FROM invoices WHERE user_id = ${user.id}` as any[];
+  const countRows = (await db`SELECT COUNT(*) as c FROM invoices WHERE user_id = ${user.id}`) as any[];
   const count = Number(countRows[0].c);
   const invoiceNumber = `INV-${String(count + 1).padStart(3, "0")}`;
   await db`
