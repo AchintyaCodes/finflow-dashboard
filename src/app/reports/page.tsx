@@ -7,15 +7,16 @@ export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
   const user = await requireUser();
+  const db = sql();
 
   const [revenueRows, outstandingRows, monthlyRaw, clientRevenueRows] = await Promise.all([
-    sql`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status = 'Paid'`,
-    sql`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status != 'Paid'`,
-    sql`SELECT TO_CHAR(issued_at, 'YYYY-MM') as ym,
+    db`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status = 'Paid'`,
+    db`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status != 'Paid'`,
+    db`SELECT TO_CHAR(issued_at, 'YYYY-MM') as ym,
                SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END) as revenue
         FROM invoices WHERE user_id = ${user.id} AND issued_at >= NOW() - INTERVAL '18 months'
         GROUP BY ym ORDER BY ym ASC`,
-    sql`SELECT c.name, COALESCE(SUM(i.amount), 0) as value
+    db`SELECT c.name, COALESCE(SUM(i.amount), 0) as value
         FROM clients c
         LEFT JOIN invoices i ON i.client_id = c.id AND i.status = 'Paid'
         WHERE c.user_id = ${user.id}

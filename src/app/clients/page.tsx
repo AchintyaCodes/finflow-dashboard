@@ -15,8 +15,9 @@ const statusStyle: Record<string, string> = {
 
 export default async function ClientsPage() {
   const user = await requireUser();
+  const db = sql();
 
-  const clients = await sql`
+  const clients = await db`
     SELECT c.id, c.name, c.email, c.status, c.rating, c.since,
            COUNT(DISTINCT p.id) as projects,
            COALESCE(SUM(i.amount), 0) as revenue

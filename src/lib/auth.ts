@@ -17,7 +17,8 @@ export type User = {
 export async function getCurrentUser(): Promise<User | null> {
   const session = await getSession();
   if (!session) return null;
-  const rows = await sql`
+  const db = sql();
+  const rows = await db`
     SELECT id, name, email, currency, notify_overdue, notify_paid, notify_weekly
     FROM users WHERE id = ${session.userId}
   `;
@@ -32,11 +33,12 @@ export async function requireUser(): Promise<User> {
 
 export async function signUp(name: string, email: string, password: string) {
   await initDb();
-  const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
+  const db = sql();
+  const existing = await db`SELECT id FROM users WHERE email = ${email}`;
   if (existing.length > 0) return { error: "Email already in use." };
 
   const hashed = await bcrypt.hash(password, 10);
-  const result = await sql`
+  const result = await db`
     INSERT INTO users (name, email, password) VALUES (${name}, ${email}, ${hashed})
     RETURNING id
   `;
@@ -47,7 +49,8 @@ export async function signUp(name: string, email: string, password: string) {
 }
 
 export async function signIn(email: string, password: string) {
-  const rows = await sql`SELECT id, password FROM users WHERE email = ${email}`;
+  const db = sql();
+  const rows = await db`SELECT id, password FROM users WHERE email = ${email}`;
   if (rows.length === 0) return { error: "Invalid email or password." };
   const user = rows[0] as { id: number; password: string };
   const valid = await bcrypt.compare(password, user.password);
@@ -62,6 +65,7 @@ export async function signOut() {
 }
 
 async function seedDemoData(userId: number) {
+  const db = sql();
   function relDate(offsetDays: number): string {
     const d = new Date();
     d.setDate(d.getDate() + offsetDays);
@@ -79,7 +83,7 @@ async function seedDemoData(userId: number) {
 
   const clientIds: number[] = [];
   for (const c of clients) {
-    const r = await sql`
+    const r = await db`
       INSERT INTO clients (user_id, name, email, status, rating, since)
       VALUES (${userId}, ${c.name}, ${c.email}, ${c.status}, ${c.rating}, ${c.since})
       RETURNING id
@@ -98,7 +102,7 @@ async function seedDemoData(userId: number) {
 
   const projectIds: number[] = [];
   for (const p of projects) {
-    const r = await sql`
+    const r = await db`
       INSERT INTO projects (user_id, client_id, name, stage, value, deadline, progress)
       VALUES (${userId}, ${clientIds[p.clientIdx]}, ${p.name}, ${p.stage}, ${p.value}, ${p.deadline}, ${p.progress})
       RETURNING id
@@ -121,7 +125,7 @@ async function seedDemoData(userId: number) {
   for (const inv of invoices) {
     const due = new Date(inv.issued);
     due.setDate(due.getDate() + 14);
-    await sql`
+    await db`
       INSERT INTO invoices (user_id, client_id, project_id, invoice_number, amount, status, issued_at, due_at)
       VALUES (${userId}, ${clientIds[inv.ci]}, ${projectIds[inv.pi]}, ${inv.num}, ${inv.amount}, ${inv.status}, ${inv.issued}, ${due.toISOString().slice(0,10)})
     `;

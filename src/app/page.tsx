@@ -11,22 +11,23 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const user = await requireUser();
+  const db = sql();
 
   const [billedRows, clientRows, avgRows, unpaidRows, revenueRaw, invoiceRows, projectRows] = await Promise.all([
-    sql`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id}`,
-    sql`SELECT COUNT(*) as v FROM clients WHERE user_id = ${user.id} AND status = 'Active'`,
-    sql`SELECT COALESCE(AVG(value),0) as v FROM projects WHERE user_id = ${user.id}`,
-    sql`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status != 'Paid'`,
-    sql`SELECT TO_CHAR(issued_at, 'YYYY-MM') as ym, SUM(amount) as revenue
+    db`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id}`,
+    db`SELECT COUNT(*) as v FROM clients WHERE user_id = ${user.id} AND status = 'Active'`,
+    db`SELECT COALESCE(AVG(value),0) as v FROM projects WHERE user_id = ${user.id}`,
+    db`SELECT COALESCE(SUM(amount),0) as v FROM invoices WHERE user_id = ${user.id} AND status != 'Paid'`,
+    db`SELECT TO_CHAR(issued_at, 'YYYY-MM') as ym, SUM(amount) as revenue
         FROM invoices WHERE user_id = ${user.id} AND issued_at >= NOW() - INTERVAL '18 months'
         GROUP BY ym ORDER BY ym ASC`,
-    sql`SELECT i.id, c.name as client, p.name as project, i.invoice_number as id_num,
+    db`SELECT i.id, c.name as client, p.name as project, i.invoice_number as id_num,
                i.due_at as due, i.amount, i.status
         FROM invoices i
         LEFT JOIN clients c ON i.client_id = c.id
         LEFT JOIN projects p ON i.project_id = p.id
         WHERE i.user_id = ${user.id} ORDER BY i.created_at DESC LIMIT 5`,
-    sql`SELECT p.id, p.name, c.name as client, p.stage, p.value
+    db`SELECT p.id, p.name, c.name as client, p.stage, p.value
         FROM projects p LEFT JOIN clients c ON p.client_id = c.id
         WHERE p.user_id = ${user.id} ORDER BY p.created_at DESC LIMIT 8`,
   ]);

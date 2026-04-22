@@ -14,16 +14,17 @@ const statusStyle: Record<string, string> = {
 
 export default async function InvoicesPage() {
   const user = await requireUser();
+  const db = sql();
 
   const [invoiceRows, clientRows, projectRows] = await Promise.all([
-    sql`SELECT i.id, i.invoice_number, c.name as client, p.name as project,
+    db`SELECT i.id, i.invoice_number, c.name as client, p.name as project,
                i.issued_at, i.due_at, i.amount, i.status
         FROM invoices i
         LEFT JOIN clients c ON i.client_id = c.id
         LEFT JOIN projects p ON i.project_id = p.id
         WHERE i.user_id = ${user.id} ORDER BY i.created_at DESC`,
-    sql`SELECT id, name FROM clients WHERE user_id = ${user.id}`,
-    sql`SELECT id, name FROM projects WHERE user_id = ${user.id}`,
+    db`SELECT id, name FROM clients WHERE user_id = ${user.id}`,
+    db`SELECT id, name FROM projects WHERE user_id = ${user.id}`,
   ]);
 
   const invoices = invoiceRows as any[];
