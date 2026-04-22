@@ -16,20 +16,22 @@ export default async function InvoicesPage() {
   const user = await requireUser();
   const db = sql();
 
-  const [invoiceRows, clientRows, projectRows] = (await Promise.all([
-    db`SELECT i.id, i.invoice_number, c.name as client, p.name as project,
-               i.issued_at, i.due_at, i.amount, i.status
-        FROM invoices i
-        LEFT JOIN clients c ON i.client_id = c.id
-        LEFT JOIN projects p ON i.project_id = p.id
-        WHERE i.user_id = ${user.id} ORDER BY i.created_at DESC`,
-    db`SELECT id, name FROM clients WHERE user_id = ${user.id}`,
-    db`SELECT id, name FROM projects WHERE user_id = ${user.id}`,
-  ])) as any[];
+  const [invoiceRows, clientRows, projectRows] = await Promise.all([
+  db`SELECT i.id, i.invoice_number, c.name as client, p.name as project,
+     i.issued_at, i.due_at, i.amount, i.status
+     FROM invoices i
+     LEFT JOIN clients c ON i.client_id = c.id
+     LEFT JOIN projects p ON i.project_id = p.id
+     WHERE i.user_id = ${user.id} ORDER BY i.created_at DESC` as unknown as any[],
 
-  const invoices = invoiceRows as any[];
-  const clients  = clientRows as any[];
-  const projects = projectRows as any[];
+  db`SELECT id, name FROM clients WHERE user_id = ${user.id}` as unknown as any[],
+
+  db`SELECT id, name FROM projects WHERE user_id = ${user.id}` as unknown as any[],
+]);
+
+const invoices = invoiceRows;
+const clients  = clientRows;
+const projects = projectRows;
 
   const total   = invoices.reduce((s, i) => s + Number(i.amount), 0);
   const paid    = invoices.filter(i => i.status === "Paid").reduce((s, i) => s + Number(i.amount), 0);
