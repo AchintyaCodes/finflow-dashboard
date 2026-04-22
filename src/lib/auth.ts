@@ -21,7 +21,7 @@ export async function getCurrentUser(): Promise<User | null> {
   const rows = await db`
     SELECT id, name, email, currency, notify_overdue, notify_paid, notify_weekly
     FROM users WHERE id = ${session.userId}
-  `;
+  ` as any[];
   return (rows[0] as User) ?? null;
 }
 
@@ -34,14 +34,14 @@ export async function requireUser(): Promise<User> {
 export async function signUp(name: string, email: string, password: string) {
   await initDb();
   const db = sql();
-  const existing = await db`SELECT id FROM users WHERE email = ${email}`;
+  const existing = await db`SELECT id FROM users WHERE email = ${email}` as any[];
   if (existing.length > 0) return { error: "Email already in use." };
 
   const hashed = await bcrypt.hash(password, 10);
   const result = await db`
     INSERT INTO users (name, email, password) VALUES (${name}, ${email}, ${hashed})
     RETURNING id
-  `;
+  ` as any[];
   const userId = result[0].id;
   await seedDemoData(userId);
   await createSession(userId);
@@ -50,7 +50,7 @@ export async function signUp(name: string, email: string, password: string) {
 
 export async function signIn(email: string, password: string) {
   const db = sql();
-  const rows = await db`SELECT id, password FROM users WHERE email = ${email}`;
+  const rows = await db`SELECT id, password FROM users WHERE email = ${email}` as any[];
   if (rows.length === 0) return { error: "Invalid email or password." };
   const user = rows[0] as { id: number; password: string };
   const valid = await bcrypt.compare(password, user.password);
@@ -87,7 +87,7 @@ async function seedDemoData(userId: number) {
       INSERT INTO clients (user_id, name, email, status, rating, since)
       VALUES (${userId}, ${c.name}, ${c.email}, ${c.status}, ${c.rating}, ${c.since})
       RETURNING id
-    `;
+    ` as any[];
     clientIds.push(r[0].id);
   }
 
@@ -106,7 +106,7 @@ async function seedDemoData(userId: number) {
       INSERT INTO projects (user_id, client_id, name, stage, value, deadline, progress)
       VALUES (${userId}, ${clientIds[p.clientIdx]}, ${p.name}, ${p.stage}, ${p.value}, ${p.deadline}, ${p.progress})
       RETURNING id
-    `;
+    ` as any[];
     projectIds.push(r[0].id);
   }
 

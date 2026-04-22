@@ -23,8 +23,8 @@ export default async function ProjectsPage() {
   const [projectRows, clientRows] = await Promise.all([
     db`SELECT p.id, p.name, c.name as client, p.stage, p.value, p.deadline, p.progress
         FROM projects p LEFT JOIN clients c ON p.client_id = c.id
-        WHERE p.user_id = ${user.id} ORDER BY p.created_at DESC`,
-    db`SELECT id, name FROM clients WHERE user_id = ${user.id}`,
+        WHERE p.user_id = ${user.id} ORDER BY p.created_at DESC` as any[],
+    db`SELECT id, name FROM clients WHERE user_id = ${user.id}` as any[],
   ]);
 
   const projects = projectRows as any[];
