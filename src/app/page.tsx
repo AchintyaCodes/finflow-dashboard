@@ -9,6 +9,11 @@ import sql from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+function toDateStr(val: unknown): string {
+  if (val instanceof Date) return val.toISOString().slice(0, 10);
+  return String(val ?? "");
+}
+
 export default async function Home() {
   const user = await requireUser();
   const db = sql();
@@ -33,26 +38,30 @@ export default async function Home() {
   ])) as any[];
 
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const revenueData = (revenueRaw as { ym: string; revenue: number }[]).map(r => ({
+  const revenueData = (revenueRaw as any[]).map(r => ({
     month: MONTHS[parseInt(r.ym.split("-")[1]) - 1],
     revenue: Number(r.revenue),
   }));
 
   const stats = [
     { label: "Total Billed",      value: `$${Number(billedRows[0].v).toLocaleString()}`, trend: "all time",    up: true  },
-    { label: "Active Clients",    value: String(clientRows[0].v),                        trend: "right now",   up: true  },
+    { label: "Active Clients",    value: String(clientRows[0].v),                         trend: "right now",   up: true  },
     { label: "Avg Project Value", value: `$${Math.round(Number(avgRows[0].v)).toLocaleString()}`, trend: "per project", up: true },
     { label: "Unpaid Invoices",   value: `$${Number(unpaidRows[0].v).toLocaleString()}`, trend: "outstanding", up: false },
   ];
 
   const invoices = (invoiceRows as any[]).map(i => ({
-    id: i.id_num, client: i.client, project: i.project,
-    due: i.due, amount: `$${Number(i.amount).toLocaleString()}`,
+    id: i.id_num,
+    client: i.client,
+    project: i.project,
+    due: toDateStr(i.due),
+    amount: `$${Number(i.amount).toLocaleString()}`,
     status: i.status as "Paid" | "Pending" | "Overdue",
   }));
 
   const projects = (projectRows as any[]).map(p => ({
-    name: p.name, client: p.client,
+    name: p.name,
+    client: p.client,
     stage: p.stage as "Proposal" | "In Progress" | "Review" | "Paid",
     value: `$${Number(p.value).toLocaleString()}`,
   }));
